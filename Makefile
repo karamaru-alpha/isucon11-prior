@@ -48,7 +48,7 @@ before:
 # (cd go && make) -> build
 	sudo systemctl restart nginx
 	sudo systemctl restart mysql
-	sudo systemctl restart isucari.golang.service
+#	sudo systemctl restart isucari.golang.service
 
 
 
@@ -83,4 +83,3 @@ slow-off:
 .PHONY: kataru
 kataru:
 	sudo cat $(NGX_LOG) | kataribe -f ./kataribe.toml
-
