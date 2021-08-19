@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -385,10 +386,10 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		// found := 0
 		schedule := &Schedule{}
 		if err := tx.QueryRowxContext(ctx, "SELECT * FROM `schedules` WHERE `id` = ? LIMIT 1", scheduleID).StructScan(schedule); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return sendErrorJSON(w, fmt.Errorf("schedule not found"), 403)
+			}
 			return sendErrorJSON(w, err, 500)
-		}
-		if schedule == nil {
-			return sendErrorJSON(w, fmt.Errorf("schedule not found"), 403)
 		}
 
 		// found = 0
