@@ -6,7 +6,8 @@ CREATE TABLE `users` (
   `email`      VARCHAR(255) NOT NULL DEFAULT '',
   `nickname`   VARCHAR(120) NOT NULL DEFAULT '',
   `staff`      BOOLEAN NOT NULL DEFAULT false,
-  `created_at` DATETIME(6) NOT NULL
+  `created_at` DATETIME(6) NOT NULL,
+  INDEX idx_email (`email`)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
 
 DROP TABLE IF EXISTS `schedules`;
