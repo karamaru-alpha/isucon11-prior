@@ -35,6 +35,8 @@ setup:
 
 .PHONY: before
 before:
+	git stash
+	git pull origin main
 	$(eval when := $(shell date "+%s"))
 	mkdir -p ~/logs/$(when)
 	@if [ -f $(NGX_LOG) ]; then \
