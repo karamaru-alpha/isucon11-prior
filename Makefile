@@ -45,7 +45,6 @@ before:
 	fi
 	sudo cp nginx.conf /etc/nginx/nginx.conf
 	sudo cp my.cnf /etc/mysql/my.cnf
-# (cd go && make) -> build
 	sudo systemctl restart nginx
 	sudo systemctl restart mysql
 	(cd golang && go build -o ./bin/webapp)
