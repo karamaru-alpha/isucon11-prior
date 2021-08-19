@@ -459,19 +459,41 @@ func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for rows.Next() {
-		schedule := &Schedule{}
-		var reserved sql.NullInt64
-		if err := rows.Scan(&schedule.ID, &schedule.Title, &schedule.Capacity, &reserved, &schedule.CreatedAt); err != nil {
-			sendErrorJSON(w, err, 500)
-			return
-		}
+	currentUser := getCurrentUser(r)
+	if currentUser != nil && currentUser.Staff {
+		for rows.Next() {
+			schedule := &Schedule{}
+			var reserved sql.NullInt64
+			if err := rows.Scan(&schedule.ID, &schedule.Title, &schedule.Capacity, &reserved, &schedule.CreatedAt); err != nil {
+				sendErrorJSON(w, err, 500)
+				return
+			}
 
-		if reserved.Valid {
-			schedule.Reserved = int(reserved.Int64)
-		}
+			if reserved.Valid {
+				schedule.Reserved = int(reserved.Int64)
+			}
 
-		schedules = append(schedules, schedule)
+			schedules = append(schedules, schedule)
+		}
+	} else {
+		for rows.Next() {
+			schedule := &Schedule{}
+			var reserved sql.NullInt64
+			if err := rows.Scan(&schedule.ID, &schedule.Title, &schedule.Capacity, &reserved, &schedule.CreatedAt); err != nil {
+				sendErrorJSON(w, err, 500)
+				return
+			}
+
+			if reserved.Valid {
+				schedule.Reserved = int(reserved.Int64)
+			}
+
+			if schedule.Reserved >= schedule.Capacity {
+				continue
+			}
+
+			schedules = append(schedules, schedule)
+		}
 	}
 
 	sendJSON(w, schedules, 200)
