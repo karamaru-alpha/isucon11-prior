@@ -122,6 +122,9 @@ func getReservations(r *http.Request, s *Schedule) error {
 		reservation := Reservation{}
 		user := User{}
 		if err := rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &user.Email, &user.Staff, &user.CreatedAt); err != nil {
+			log.Println("----")
+			log.Println(err)
+			log.Println("----")
 			return err
 		}
 
