@@ -408,7 +408,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 
 		// found := 0
 		schedule := &Schedule{}
-		if err := tx.QueryRowxContext(ctx, "SELECT * FROM `schedules` WHERE `id` = ? LIMIT 1", scheduleID).StructScan(schedule); err != nil {
+		if err := tx.QueryRowxContext(ctx, "SELECT * FROM `schedules` WHERE `id` = ? LIMIT 1 FOR UPDATE", scheduleID).StructScan(schedule); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return sendErrorJSON(w, fmt.Errorf("schedule not found"), 403)
 			}
