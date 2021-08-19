@@ -102,22 +102,22 @@ func getReservations(r *http.Request, s *Schedule) error {
 	return nil
 }
 
-func getReservationsCount(r *http.Request, s *Schedule) error {
-	rows, err := db.QueryxContext(r.Context(), "SELECT * FROM `reservations` WHERE `schedule_id` = ?", s.ID)
-	if err != nil {
-		return err
-	}
+// func getReservationsCount(r *http.Request, s *Schedule) error {
+// 	rows, err := db.QueryxContext(r.Context(), "SELECT * FROM `reservations` WHERE `schedule_id` = ?", s.ID)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	defer rows.Close()
+// 	defer rows.Close()
 
-	reserved := 0
-	for rows.Next() {
-		reserved++
-	}
-	s.Reserved = reserved
+// 	reserved := 0
+// 	for rows.Next() {
+// 		reserved++
+// 	}
+// 	s.Reserved = reserved
 
-	return nil
-}
+// 	return nil
+// }
 
 func getUser(r *http.Request, id string) *User {
 	user := &User{}
@@ -411,24 +411,35 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 
 func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 	schedules := []*Schedule{}
-	rows, err := db.QueryxContext(r.Context(), "SELECT * FROM `schedules` ORDER BY `id` DESC")
+	err := db.QueryRowxContext(r.Context(), `
+		SELECT
+			s.id,
+			s.title,
+			s.capacity,
+			r.reserved,
+			s.created_at
+		FROM schedules s
+		LEFT JOIN (SELECT schedule_id, COUNT(*) reserved FROM reservations GROUP BY schedule_id) r
+		ON s.id = r.schedule_id
+		ORDER BY s.id DESC
+	`).StructScan(&schedules)
 	if err != nil {
 		sendErrorJSON(w, err, 500)
 		return
 	}
 
-	for rows.Next() {
-		schedule := &Schedule{}
-		if err := rows.StructScan(schedule); err != nil {
-			sendErrorJSON(w, err, 500)
-			return
-		}
-		if err := getReservationsCount(r, schedule); err != nil {
-			sendErrorJSON(w, err, 500)
-			return
-		}
-		schedules = append(schedules, schedule)
-	}
+	// for rows.Next() {
+	// 	schedule := &Schedule{}
+	// 	if err := rows.StructScan(schedule); err != nil {
+	// 		sendErrorJSON(w, err, 500)
+	// 		return
+	// 	}
+	// 	if err := getReservationsCount(r, schedule); err != nil {
+	// 		sendErrorJSON(w, err, 500)
+	// 		return
+	// 	}
+	// 	schedules = append(schedules, schedule)
+	// }
 
 	sendJSON(w, schedules, 200)
 }
