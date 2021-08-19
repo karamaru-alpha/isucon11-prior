@@ -273,18 +273,20 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		nickname := r.FormValue("nickname")
 		id := generateID(tx, "users")
 
+		createdAt := time.Now()
 		if _, err := tx.ExecContext(
 			ctx,
-			"INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, NOW(6))",
-			id, email, nickname,
+			"INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, ?)",
+			id, email, nickname, createdAt,
 		); err != nil {
 			return err
 		}
 		user.ID = id
 		user.Email = email
 		user.Nickname = nickname
+		user.CreatedAt = createdAt
 
-		return tx.QueryRowContext(ctx, "SELECT `created_at` FROM `users` WHERE `id` = ? LIMIT 1", id).Scan(&user.CreatedAt)
+		return nil
 	})
 
 	if err != nil {
