@@ -56,7 +56,7 @@ before:
 
 .PHONY: bench
 bench:
-	../bin/benchmarker -target 127.0.0.1:8080 -parallelism 25
+	../bin/benchmarker -target 127.0.0.1:8080 -parallelism 20
 
 #--------------------
 # mysql周り cnfならいらない
