@@ -61,8 +61,8 @@ func getCurrentUser(r *http.Request) *User {
 	return user
 }
 
-func requiredLogin(w http.ResponseWriter, r *http.Request) bool {
-	if getCurrentUser(r) != nil {
+func requiredLogin(w http.ResponseWriter, r *http.Request, u *User) bool {
+	if u != nil {
 		return true
 	}
 	sendErrorJSON(w, fmt.Errorf("login required"), 401)
@@ -368,8 +368,8 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		sendErrorJSON(w, err, 500)
 		return
 	}
-
-	if !requiredLogin(w, r) {
+	currentUser := getCurrentUser(r)
+	if !requiredLogin(w, r, currentUser) {
 		return
 	}
 
@@ -377,7 +377,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
 		id := generateID(tx, "schedules")
 		scheduleID := r.PostFormValue("schedule_id")
-		userID := getCurrentUser(r).ID
+		userID := currentUser.ID
 
 		found := 0
 		tx.QueryRowContext(ctx, "SELECT 1 FROM `schedules` WHERE `id` = ? LIMIT 1 FOR UPDATE", scheduleID).Scan(&found)
