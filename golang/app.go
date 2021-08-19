@@ -101,6 +101,9 @@ func getReservations(r *http.Request, s *Schedule) error {
 	// s.Reserved = reserved
 
 	// return nil
+
+	currentUser := getCurrentUser(r)
+
 	rows, err := db.QueryxContext(r.Context(), `
 		SELECT
 			r.*,
@@ -118,16 +121,34 @@ func getReservations(r *http.Request, s *Schedule) error {
 	}
 
 	var reservations []*Reservation
-	for rows.Next() {
-		reservation := Reservation{}
-		user := User{}
-		if err := rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &user.Email, &user.Nickname, &user.Staff, &user.CreatedAt); err != nil {
-			return err
+
+	if currentUser != nil && currentUser.Staff {
+		for rows.Next() {
+			reservation := Reservation{}
+			user := User{}
+
+			if err := rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &user.Email, &user.Nickname, &user.Staff, &user.CreatedAt); err != nil {
+				return err
+			}
+
+			reservation.User = &user
+
+			reservations = append(reservations, &reservation)
 		}
+	} else {
+		for rows.Next() {
+			reservation := Reservation{}
+			user := User{}
+			tmp := ""
 
-		reservation.User = &user
+			if err := rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &tmp, &user.Nickname, &user.Staff, &user.CreatedAt); err != nil {
+				return err
+			}
 
-		reservations = append(reservations, &reservation)
+			reservation.User = &user
+
+			reservations = append(reservations, &reservation)
+		}
 	}
 
 	s.Reserved = len(reservations)
