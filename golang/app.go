@@ -119,15 +119,13 @@ func getReservations(r *http.Request, s *Schedule) error {
 
 	var reservations []*Reservation
 	for rows.Next() {
-		var reservation Reservation
-		var user User
-		rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &user.Email, &user.Staff, &user.CreatedAt)
+		reservation := Reservation{}
+		user := User{}
+		if err := rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &user.Email, &user.Staff, &user.CreatedAt); err != nil {
+			return err
+		}
 
 		reservation.User = &user
-
-		log.Println("---------------")
-		log.Println(user)
-		log.Println("---------------")
 
 		reservations = append(reservations, &reservation)
 	}
