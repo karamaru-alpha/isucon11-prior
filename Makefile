@@ -52,6 +52,10 @@ before:
 
 
 
+.PHONY: bench
+bench:
+	../bin/benchmarker -target 127.0.0.1:8080
+
 #--------------------
 # mysql周り cnfならいらない
 #--------------------
