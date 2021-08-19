@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -113,7 +114,7 @@ func getReservations(r *http.Request, s *Schedule) error {
 		JOIN users u ON r.user_id = u.id
 		WHERE r.schedule_id = ?
 	`, s.ID)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
 	s.Reservations = reservations
