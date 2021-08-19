@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -101,8 +100,7 @@ func getReservations(r *http.Request, s *Schedule) error {
 	// s.Reserved = reserved
 
 	// return nil
-	var reservations []*Reservation
-	err := db.SelectContext(r.Context(), &reservations, `
+	rows, err := db.QueryxContext(r.Context(), `
 		SELECT
 			r.*,
 			u.id as "user.id",
@@ -114,10 +112,21 @@ func getReservations(r *http.Request, s *Schedule) error {
 		JOIN users u ON r.user_id = u.id
 		WHERE r.schedule_id = ?
 	`, s.ID)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+	if err != nil {
 		return err
 	}
-	s.Reservations = reservations
+
+	var reservations []*Reservation
+	for rows.Next() {
+		var reservation Reservation
+		var user User
+		rows.Scan(&reservation.ID, &reservation.ScheduleID, &reservation.UserID, &reservation.CreatedAt, &user.ID, &user.Email, &user.Staff, &user.CreatedAt)
+
+		reservation.User = &user
+
+		reservations = append(reservations, &reservation)
+	}
+
 	s.Reserved = len(reservations)
 
 	return nil
