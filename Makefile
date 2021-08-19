@@ -48,7 +48,8 @@ before:
 # (cd go && make) -> build
 	sudo systemctl restart nginx
 	sudo systemctl restart mysql
-#	sudo systemctl restart isucari.golang.service
+	(cd golang && go build -o ./bin/webapp)
+	sudo systemctl restart web-golang.service
 
 
 
