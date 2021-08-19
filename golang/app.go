@@ -411,7 +411,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 
 func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 	schedules := []*Schedule{}
-	err := db.QueryRowxContext(r.Context(), `
+	err := db.Select(&schedules, `
 		SELECT
 			s.id,
 			s.title,
@@ -422,7 +422,7 @@ func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 		LEFT JOIN (SELECT schedule_id, COUNT(*) reserved FROM reservations GROUP BY schedule_id) r
 		ON s.id = r.schedule_id
 		ORDER BY s.id DESC
-	`).StructScan(&schedules)
+	`)
 	if err != nil {
 		sendErrorJSON(w, err, 500)
 		return
