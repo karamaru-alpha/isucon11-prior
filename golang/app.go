@@ -125,6 +125,10 @@ func getReservations(r *http.Request, s *Schedule) error {
 
 		reservation.User = &user
 
+		log.Println("---------------")
+		log.Println(user)
+		log.Println("---------------")
+
 		reservations = append(reservations, &reservation)
 	}
 
