@@ -385,6 +385,12 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 			return sendErrorJSON(w, fmt.Errorf("schedule not found"), 403)
 		}
 
+		// found = 0
+		// tx.QueryRowContext(ctx, "SELECT 1 FROM `users` WHERE `id` = ? LIMIT 1", userID).Scan(&found)
+		// if found != 1 {
+		// 	return sendErrorJSON(w, fmt.Errorf("user not found"), 403)
+		// }
+
 		found = 0
 		tx.QueryRowContext(ctx, "SELECT 1 FROM `reservations` WHERE `schedule_id` = ? AND `user_id` = ? LIMIT 1", scheduleID, userID).Scan(&found)
 		if found == 1 {
@@ -409,16 +415,12 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 			return sendErrorJSON(w, fmt.Errorf("capacity is already full"), 403)
 		}
 
+		createdAt := time.Now()
 		if _, err := tx.ExecContext(
 			ctx,
-			"INSERT INTO `reservations` (`id`, `schedule_id`, `user_id`, `created_at`) VALUES (?, ?, ?, NOW(6))",
-			id, scheduleID, userID,
+			"INSERT INTO `reservations` (`id`, `schedule_id`, `user_id`, `created_at`) VALUES (?, ?, ?, ?)",
+			id, scheduleID, userID, createdAt,
 		); err != nil {
-			return err
-		}
-
-		var createdAt time.Time
-		if err := tx.QueryRowContext(ctx, "SELECT `created_at` FROM `reservations` WHERE `id` = ?", id).Scan(&createdAt); err != nil {
 			return err
 		}
 		reservation.ID = id
