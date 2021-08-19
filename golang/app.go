@@ -101,7 +101,7 @@ func getReservations(r *http.Request, s *Schedule) error {
 
 	// return nil
 	var reservations []*Reservation
-	err := db.Select(&reservations, `
+	err := db.SelectContext(r.Context(), &reservations, `
 		SELECT
 			r.*,
 			u.id as "user.id",
