@@ -381,9 +381,12 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		scheduleID := r.PostFormValue("schedule_id")
 		userID := currentUser.ID
 
-		found := 0
-		tx.QueryRowContext(ctx, "SELECT 1 FROM `schedules` WHERE `id` = ? LIMIT 1 FOR UPDATE", scheduleID).Scan(&found)
-		if found != 1 {
+		// found := 0
+		var schedule *Schedule
+		if err := tx.QueryRowxContext(ctx, "SELECT * FROM `schedules` WHERE `id` = ? LIMIT 1 FOR UPDATE", scheduleID).StructScan(schedule); err != nil {
+			return sendErrorJSON(w, err, 500)
+		}
+		if schedule == nil {
 			return sendErrorJSON(w, fmt.Errorf("schedule not found"), 403)
 		}
 
@@ -393,7 +396,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		// 	return sendErrorJSON(w, fmt.Errorf("user not found"), 403)
 		// }
 
-		found = 0
+		found := 0
 		tx.QueryRowContext(ctx, "SELECT 1 FROM `reservations` WHERE `schedule_id` = ? AND `user_id` = ? LIMIT 1", scheduleID, userID).Scan(&found)
 		if found == 1 {
 			return sendErrorJSON(w, fmt.Errorf("already taken"), 403)
