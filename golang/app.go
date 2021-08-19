@@ -149,16 +149,16 @@ func getReservations(r *http.Request, s *Schedule) error {
 // 	return nil
 // }
 
-func getUser(r *http.Request, id string) *User {
-	user := &User{}
-	if err := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", id).StructScan(user); err != nil {
-		return nil
-	}
-	if getCurrentUser(r) != nil && !getCurrentUser(r).Staff {
-		user.Email = ""
-	}
-	return user
-}
+// func getUser(r *http.Request, id string) *User {
+// 	user := &User{}
+// 	if err := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", id).StructScan(user); err != nil {
+// 		return nil
+// 	}
+// 	if getCurrentUser(r) != nil && !getCurrentUser(r).Staff {
+// 		user.Email = ""
+// 	}
+// 	return user
+// }
 
 func parseForm(r *http.Request) error {
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "application/x-www-form-urlencoded") {
