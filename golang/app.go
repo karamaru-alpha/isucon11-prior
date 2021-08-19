@@ -237,7 +237,7 @@ func initializeHandler(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		id := generateID()
+		id := generateID(tx, "users")
 		if _, err := tx.ExecContext(
 			ctx,
 			"INSERT INTO `users` (`id`, `email`, `nickname`, `staff`, `created_at`) VALUES (?, ?, ?, true, NOW(6))",
@@ -267,23 +267,34 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	email := r.FormValue("email")
-	nickname := r.FormValue("nickname")
-	id := generateID()
-	createdAt := time.Now()
+	user := &User{}
 
-	if _, err := db.ExecContext(r.Context(), "INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, ?)", id, email, nickname, createdAt); err != nil {
+	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
+		email := r.FormValue("email")
+		nickname := r.FormValue("nickname")
+		id := generateID(tx, "users")
+
+		createdAt := time.Now()
+		if _, err := tx.ExecContext(
+			ctx,
+			"INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, ?)",
+			id, email, nickname, createdAt,
+		); err != nil {
+			return err
+		}
+		user.ID = id
+		user.Email = email
+		user.Nickname = nickname
+		user.CreatedAt = createdAt
+
+		return nil
+	})
+
+	if err != nil {
 		sendErrorJSON(w, err, 500)
-		return
+	} else {
+		sendJSON(w, user, 200)
 	}
-
-	sendJSON(w, User{
-		ID:        id,
-		Nickname:  nickname,
-		Email:     email,
-		CreatedAt: createdAt,
-	}, 200)
-
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -327,7 +338,7 @@ func createScheduleHandler(w http.ResponseWriter, r *http.Request) {
 
 	schedule := &Schedule{}
 	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
-		id := generateID()
+		id := generateID(tx, "schedules")
 		title := r.PostFormValue("title")
 		capacity, _ := strconv.Atoi(r.PostFormValue("capacity"))
 
@@ -367,7 +378,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 
 	reservation := &Reservation{}
 	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
-		id := generateID()
+		id := generateID(tx, "schedules")
 		scheduleID := r.PostFormValue("schedule_id")
 		userID := currentUser.ID
 
