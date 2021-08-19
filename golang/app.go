@@ -411,7 +411,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 
 func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 	schedules := []*Schedule{}
-	err := db.Select(&schedules, `
+	rows, err := db.QueryxContext(r.Context(), `
 		SELECT
 			s.id,
 			s.title,
@@ -428,18 +428,20 @@ func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// for rows.Next() {
-	// 	schedule := &Schedule{}
-	// 	if err := rows.StructScan(schedule); err != nil {
-	// 		sendErrorJSON(w, err, 500)
-	// 		return
-	// 	}
-	// 	if err := getReservationsCount(r, schedule); err != nil {
-	// 		sendErrorJSON(w, err, 500)
-	// 		return
-	// 	}
-	// 	schedules = append(schedules, schedule)
-	// }
+	for rows.Next() {
+		schedule := &Schedule{}
+		var reserved sql.NullInt64
+		if err := rows.Scan(&schedule.ID, &schedule.Title, &schedule.Capacity, &reserved, &schedule.CreatedAt); err != nil {
+			sendErrorJSON(w, err, 500)
+			return
+		}
+
+		if reserved.Valid {
+			schedule.Reserved = int(reserved.Int64)
+		}
+
+		schedules = append(schedules, schedule)
+	}
 
 	sendJSON(w, schedules, 200)
 }
