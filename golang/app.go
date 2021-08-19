@@ -104,11 +104,11 @@ func getReservations(r *http.Request, s *Schedule) error {
 	rows, err := db.QueryxContext(r.Context(), `
 		SELECT
 			r.*,
-			u.id as "user.id",
-			u.email as "user.email",
-			u.nickname as "user.nickname",
-			u.staff as "user.staff",
-			u.created_at as "user.created_at"
+			u.id,
+			u.email,
+			u.nickname,
+			u.staff,
+			u.created_at
 		FROM reservations r
 		JOIN users u ON r.user_id = u.id
 		WHERE r.schedule_id = ?
