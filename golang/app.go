@@ -128,6 +128,7 @@ func getReservations(r *http.Request, s *Schedule) error {
 	}
 
 	s.Reserved = len(reservations)
+	s.Reservations = reservations
 
 	return nil
 }
