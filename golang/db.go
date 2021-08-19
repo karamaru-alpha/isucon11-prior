@@ -64,7 +64,8 @@ func transaction(ctx context.Context, opts *sql.TxOptions, handler transactionHa
 	}
 }
 
-func generateID(tx *sqlx.Tx, table string) string {
+// func generateID(tx *sqlx.Tx, table string) string {
+func generateID() string {
 	// id := ulid.MustNew(ulid.Timestamp(time.Now()), entropy).String()
 	// for {
 	// 	found := 0

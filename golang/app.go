@@ -237,7 +237,7 @@ func initializeHandler(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		id := generateID(tx, "users")
+		id := generateID()
 		if _, err := tx.ExecContext(
 			ctx,
 			"INSERT INTO `users` (`id`, `email`, `nickname`, `staff`, `created_at`) VALUES (?, ?, ?, true, NOW(6))",
@@ -272,7 +272,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
 		email := r.FormValue("email")
 		nickname := r.FormValue("nickname")
-		id := generateID(tx, "users")
+		id := generateID()
 
 		createdAt := time.Now()
 		if _, err := tx.ExecContext(
@@ -338,7 +338,7 @@ func createScheduleHandler(w http.ResponseWriter, r *http.Request) {
 
 	schedule := &Schedule{}
 	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
-		id := generateID(tx, "schedules")
+		id := generateID()
 		title := r.PostFormValue("title")
 		capacity, _ := strconv.Atoi(r.PostFormValue("capacity"))
 
@@ -378,7 +378,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 
 	reservation := &Reservation{}
 	err := transaction(r.Context(), &sql.TxOptions{}, func(ctx context.Context, tx *sqlx.Tx) error {
-		id := generateID(tx, "schedules")
+		id := generateID()
 		scheduleID := r.PostFormValue("schedule_id")
 		userID := currentUser.ID
 
