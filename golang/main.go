@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 )
 
 var (
@@ -20,6 +21,7 @@ func init() {
 }
 
 func main() {
+	os.Remove("/tmp/go.sock")
 	l, err := net.Listen("unix", "/tmp/go.sock")
 	if err != nil {
 		fmt.Printf("%s\n", err)
