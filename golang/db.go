@@ -32,13 +32,14 @@ func Getenv(key string, defaultValue string) string {
 }
 
 func init() {
-	host := Getenv("DB_HOST", "127.0.0.1")
-	port := Getenv("DB_PORT", "3306")
+	// host := Getenv("DB_HOST", "127.0.0.1")
+	// port := Getenv("DB_PORT", "3306")
 	user := Getenv("DB_USER", "isucon")
 	pass := Getenv("DB_PASS", "isucon")
 	name := Getenv("DB_NAME", "isucon2021_prior")
+	sockFileName := "/var/lib/mysql/mysql.sock"
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true", user, pass, host, port, name)
+	dsn := fmt.Sprintf("%s:%s@unix(%s)/%s?charset=utf8mb4&parseTime=true", user, pass, sockFileName, name)
 
 	var err error
 	db, err = sqlx.Connect("mysql", dsn)
