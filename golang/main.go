@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
+	"net"
 	"net/http"
 )
 
@@ -20,12 +20,14 @@ func init() {
 }
 
 func main() {
-	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", bind, port),
-		Handler: serveMux(),
+	l, err := net.Listen("unix", "/tmp/go.sock")
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return
 	}
 
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatal(err)
+	err = http.Serve(l, serveMux())
+	if err != nil {
+		panic(err)
 	}
 }
