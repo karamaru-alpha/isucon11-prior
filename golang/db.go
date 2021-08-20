@@ -37,7 +37,7 @@ func init() {
 	user := Getenv("DB_USER", "isucon")
 	pass := Getenv("DB_PASS", "isucon")
 	name := Getenv("DB_NAME", "isucon2021_prior")
-	sockFileName := "/var/lib/mysql/mysql.sock"
+	sockFileName := "/var/run/mysqld/mysqld.sock"
 
 	dsn := fmt.Sprintf("%s:%s@unix(%s)/%s?charset=utf8mb4&parseTime=true", user, pass, sockFileName, name)
 
