@@ -3,9 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 var (
@@ -23,7 +26,9 @@ func init() {
 func main() {
 	fileName := "/tmp/go.sock"
 	if err := os.Remove(fileName); err != nil {
-		panic(err)
+		if !os.IsNotExist(err) {
+			panic(err)
+		}
 	}
 	l, err := net.Listen("unix", fileName)
 	if err != nil {
@@ -33,6 +38,18 @@ func main() {
 	if err := os.Chmod(fileName, 0666); err != nil {
 		panic(err)
 	}
+
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+	go func(c chan os.Signal) {
+		// Wait for a SIGINT or SIGKILL:
+		sig := <-c
+		log.Printf("Caught signal %s: shutting down.", sig)
+		// Stop listening (and unlink the socket if unix type):
+		l.Close()
+		// And we're done:
+		os.Exit(0)
+	}(sigc)
 
 	err = http.Serve(l, serveMux())
 	if err != nil {
